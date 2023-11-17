@@ -1,9 +1,16 @@
 package domainapp.modules.simple.dom.so;
 
+import static org.apache.causeway.applib.annotation.SemanticsOf.IDEMPOTENT;
+import static org.apache.causeway.applib.annotation.SemanticsOf.NON_IDEMPOTENT_ARE_YOU_SURE;
+
+import domainapp.modules.simple.SimpleModule;
+import domainapp.modules.simple.dom.so.values.LocalDateRange;
+import domainapp.modules.simple.types.Name;
+import domainapp.modules.simple.types.Notes;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.Comparator;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.AttributeOverride;
@@ -22,9 +29,12 @@ import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.persistence.Version;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.springframework.lang.Nullable;
-
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.val;
 import org.apache.causeway.applib.annotation.Action;
 import org.apache.causeway.applib.annotation.ActionLayout;
 import org.apache.causeway.applib.annotation.BookmarkPolicy;
@@ -50,20 +60,7 @@ import org.apache.causeway.extensions.fullcalendar.applib.value.CalendarEvent;
 import org.apache.causeway.extensions.pdfjs.applib.annotations.PdfJsViewer;
 import org.apache.causeway.persistence.jpa.applib.integration.CausewayEntityListener;
 import org.apache.causeway.persistence.jpa.applib.types.BlobJpaEmbeddable;
-
-import static org.apache.causeway.applib.annotation.SemanticsOf.IDEMPOTENT;
-import static org.apache.causeway.applib.annotation.SemanticsOf.NON_IDEMPOTENT_ARE_YOU_SURE;
-
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.val;
-
-import domainapp.modules.simple.SimpleModule;
-import domainapp.modules.simple.types.Name;
-import domainapp.modules.simple.types.Notes;
+import org.springframework.lang.Nullable;
 
 
 @Entity
@@ -98,6 +95,25 @@ public class SimpleObject implements Comparable<SimpleObject>, CalendarEventable
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Long id;
+
+    @Column(nullable = true, name = "start_date")
+    @Getter @Setter
+    private LocalDate startDate;
+
+    @Column(nullable = true, name = "end_date")
+    @Getter @Setter
+    private LocalDate endDate;
+
+    @Property(editing = Editing.ENABLED)
+    @PropertyLayout(fieldSetId = "details", sequence = "1")
+    public LocalDateRange getLocalDateRange() {
+        return LocalDateRange.of(startDate, endDate);
+    }
+
+    public void setLocalDateRange(LocalDateRange localDateRange) {
+        this.startDate = localDateRange.getStartDate();
+        this.endDate = localDateRange.getEndDate();
+    }
 
     @Version
     @Column(name = "version", nullable = false)
